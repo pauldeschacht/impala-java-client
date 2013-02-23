@@ -17,15 +17,15 @@ Download the necessary dependencies into the deps directory
 
 Generate the thrift java code for the client
 
-thrift -gen java ./thrift/ImpalaService.thrift
-thrift -gen java ./thrift/beeswax.thrif
-thrift -gen java thrift/Status.thrift
-thrift -gen java thrift/cli_service.thrift
+- thrift -gen java ./thrift/ImpalaService.thrift
+- thrift -gen java ./thrift/beeswax.thrif
+- thrift -gen java thrift/Status.thrift
+- thrift -gen java thrift/cli_service.thrift
 
 Use ant to compile the generated code and build the jar file. The dependencies must be in the deps directory 
 
-ant compile
-ant build 
+- ant compile
+- ant build 
 
 TODO: Use maven so that the project can easily be imported in clojure / clojar.
 
