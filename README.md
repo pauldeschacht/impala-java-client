@@ -52,7 +52,12 @@ The input parameters for the test are the Impala host and port and the hive/sql 
 
 Building
 --------
-If you want to build the jar yourself, the build script downloads the necessary dependencies, generates the java code using thrift and compiles into a jar.
+Requirements:
+- thrift
+- ant
+
+If you want to build the jar yourself, the build script downloads the necessary dependencies, generates the java code (thrift) and compiles into a jar. It does the same for the test.
+
 
 TODO: Use maven so that the project can easily be imported in clojure / clojar.
 TODO: Build JDBC driver connecting directly to Impala
