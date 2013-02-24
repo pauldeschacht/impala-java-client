@@ -48,7 +48,7 @@ See the test/build.sh script for the details.
 
 The input parameters for the test are the Impala host and port and the hive/sql statement. 
 
-        java -cp .$CLASSPATH org.ImpalaConnectTest.ImpalaConnectTest nceoricloud02 21000 "SELECT * FROM document LIMIT 5"
+        java -cp $CLASSPATH org.ImpalaConnectTest.ImpalaConnectTest nceoricloud02 21000 "SELECT * FROM document LIMIT 5"
 
 Building
 --------
