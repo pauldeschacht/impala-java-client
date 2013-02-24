@@ -15,15 +15,17 @@ public class ImpalaConnectTest
 
     public static void main(String [] args) 
     {
-        if (args.length < 2) {
+        if (args.length < 3) {
             System.out.println("Usage: ImpalaConnectTest host port");
             return;
         }
         
-        try
-        {
+        The impala-java-client allows to connect to the Impala directly, without passing through thr 
+
+        try {
             host = args[0];
             port = Integer.parseInt(args[1]);
+            stmt = args[2];
                 
             //open connection
             TSocket transport = new TSocket(host,port);
@@ -34,7 +36,7 @@ public class ImpalaConnectTest
             client.PingImpalaService();
             
             Query query = new Query();
-            query.setQuery(stmt);
+            query.setQuery(stmt); // hive statement: SELECT * FROM table LIMIT 10;
             
             QueryHandle handle = client.query(query);
             
@@ -42,10 +44,9 @@ public class ImpalaConnectTest
             
             List<String> data = results.data;
             
-            for(int i=0;i<data.size();i++)
-                {
-                    System.out.println(data.get(i));
-                }
+            for(int i=0;i<data.size();i++) {
+                System.out.println(data.get(i));
+            }
         }
         catch(Exception e) 
             {
