@@ -1,12 +1,18 @@
 impala-java-client
 ==================
 
-Java client to connect directly to Impala using thrift (similar to the impala-shell is doing in python) and does not depend on the HiveServer2 
+A Java client that allows to connect directly to Impala. This is similar to the impala-shell, which is using Python). It does not depend on the HiveServer2.
 
-The Java client is build using trift interface.
+Using
+-----
+The test shows how to use the impala java client.
 
-The build script will download the necessary dependencies, generate the thrift java code and compile into a jar.
-The test show hows to use the impala java client  
+//from external dependencies
+import org.apache.thrift.transport.*;
+import org.apache.thrift.protocol.*;
+//from ImpalaConnect jar
+import com.cloudera.impala.thrift.*;
+import com.cloudera.beeswax.api.*;
 
         try {
             //open connection
@@ -30,7 +36,18 @@ The test show hows to use the impala java client
         catch(Exception e) {
           e.printStackTrace();
         }
+        
 
+The dependencies at runtime are libthrift-0.9.0.jar, slf4j.api-1.6.1.jar, slf4j-simple-1.6.1.jar and ImpalaService.jar
+See the test/build.sh how for the details.
+
+The input parameters for the test are the Impala host and port. 
+
+java -cp ../deps/libthrift-0.9.0.jar:../deps/slf4j.api-1.6.1.jar:./deps/slf4j-simple-1.6.1.jar:../jar/ImpalaService.jar:./jar/ImpalaConnectTest.jar org.ImpalaConnectTest.ImpalaConnectTest nceoricloud02 21000
+
+Building
+--------
+If you want to build the jar yourself, the build script downloads the necessary dependencies, generates the java code using thrift and compiles into a jar.
 
 TODO: Use maven so that the project can easily be imported in clojure / clojar.
 
