@@ -20,8 +20,6 @@ public class ImpalaConnectTest
             return;
         }
         
-        The impala-java-client allows to connect to the Impala directly, without passing through thr 
-
         try {
             host = args[0];
             port = Integer.parseInt(args[1]);
