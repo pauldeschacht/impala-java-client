@@ -43,7 +43,8 @@ The dependencies at runtime are
 - slf4j.api-1.6.1.jar
 - slf4j-simple-1.6.1.jar
 - ImpalaService.jar
-See the test/build.sh how for the details.
+
+See the test/build.sh script for the details.
 
 The input parameters for the test are the Impala host and port and the hive/sql statement. 
 
