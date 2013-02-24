@@ -7,12 +7,12 @@ Using
 -----
 The test shows how to use the impala java client.
 
-//from external dependencies
-import org.apache.thrift.transport.*;
-import org.apache.thrift.protocol.*;
-//from ImpalaConnect jar
-import com.cloudera.impala.thrift.*;
-import com.cloudera.beeswax.api.*;
+        //from external dependencies
+        import org.apache.thrift.transport.*;
+        import org.apache.thrift.protocol.*;
+        //from ImpalaConnect jar
+        import com.cloudera.impala.thrift.*;
+        import com.cloudera.beeswax.api.*;
 
         try {
             //open connection
@@ -38,12 +38,16 @@ import com.cloudera.beeswax.api.*;
         }
         
 
-The dependencies at runtime are libthrift-0.9.0.jar, slf4j.api-1.6.1.jar, slf4j-simple-1.6.1.jar and ImpalaService.jar
+The dependencies at runtime are 
+- libthrift-0.9.0.jar
+- slf4j.api-1.6.1.jar
+- slf4j-simple-1.6.1.jar
+- ImpalaService.jar
 See the test/build.sh how for the details.
 
-The input parameters for the test are the Impala host and port. 
+The input parameters for the test are the Impala host and port and the hive/sql statement. 
 
-java -cp ../deps/libthrift-0.9.0.jar:../deps/slf4j.api-1.6.1.jar:./deps/slf4j-simple-1.6.1.jar:../jar/ImpalaService.jar:./jar/ImpalaConnectTest.jar org.ImpalaConnectTest.ImpalaConnectTest nceoricloud02 21000
+        java -cp .$CLASSPATH org.ImpalaConnectTest.ImpalaConnectTest nceoricloud02 21000 "SELECT * FROM document LIMIT 5"
 
 Building
 --------
