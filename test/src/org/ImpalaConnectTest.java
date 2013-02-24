@@ -10,13 +10,21 @@ import com.cloudera.beeswax.api.*;
 public class ImpalaConnectTest
 {
     private static String host="nceoricloud02";
-    private static int port=10000;
-    private static String stmt="SELECT * FROM document LIMIT 5;";
+    private static int port=21000;
+    private static String stmt="SELECT * FROM document LIMIT 5";
 
     public static void main(String [] args) 
     {
+        if (args.length < 2) {
+            System.out.println("Usage: ImpalaConnectTest host port");
+            return;
+        }
+        
         try
         {
+            host = args[0];
+            port = Integer.parseInt(args[1]);
+                
             //open connection
             TSocket transport = new TSocket(host,port);
             transport.open();
