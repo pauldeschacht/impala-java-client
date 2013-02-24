@@ -1,7 +1,7 @@
 impala-java-client
 ==================
 
-A Java client that allows to connect directly to Impala. This is similar to the impala-shell, which is using Python). It does not depend on the HiveServer2.
+A Java client that allows to connect directly to Impala. This is similar to the impala-shell, which is using Python. It does not depend on the HiveServer2.
 
 Using
 -----
