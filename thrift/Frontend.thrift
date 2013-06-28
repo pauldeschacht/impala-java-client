@@ -58,6 +58,14 @@ struct TColumnDesc {
   2: required Types.TPrimitiveType columnType
 }
 
+// A column definition; used by CREATE TABLE and DESCRIBE <table> statements. A column
+// definition has a different meaning (and additional fields) from a column descriptor,
+// so this is a separate struct from TColumnDesc.
+struct TColumnDef {
+  1: required TColumnDesc columnDesc
+  2: optional string comment
+}
+
 // Arguments to DescribeTable, which returns a list of column descriptors for a 
 // given table
 struct TDescribeTableParams {
@@ -67,13 +75,267 @@ struct TDescribeTableParams {
 
 // Results of a call to describeTable()
 struct TDescribeTableResult {
-  1: required list<TColumnDesc> columns
+  1: required list<TColumnDef> columns
+}
+
+// Parameters of CREATE DATABASE commands
+struct TCreateDbParams {
+  // Name of the database to create
+  1: required string db
+
+  // Optional comment to attach to the database
+  2: optional string comment
+
+  // Optional HDFS path for the database. This will be the default location for all
+  // new tables created in the database.
+  3: optional string location
+
+  // Do not throw an error if a database of the same name already exists.
+  4: optional bool if_not_exists
+}
+
+// Valid table file formats
+enum TFileFormat {
+  PARQUETFILE,
+  RCFILE,
+  SEQUENCEFILE,
+  TEXTFILE,
+}
+
+// Represents a fully qualified table name.
+struct TTableName {
+  // Name of the table's parent database. Null to specify an unqualified table name.
+  1: required string db_name
+
+  // Name of the table
+  2: required string table_name
+}
+
+// The row format specifies how to interpret the fields (columns) and lines (rows) in a
+// data file when creating a new table.
+struct TTableRowFormat {
+  // Optional terminator string used to delimit fields (columns) in the table
+  1: optional string field_terminator
+
+  // Optional terminator string used to delimit lines (rows) in a table
+  2: optional string line_terminator
+
+  // Optional string used to specify a special escape character sequence
+  3: optional string escaped_by
+}
+
+// Types of ALTER TABLE commands supported.
+enum TAlterTableType {
+  ADD_REPLACE_COLUMNS,
+  ADD_PARTITION,
+  CHANGE_COLUMN,
+  DROP_COLUMN,
+  DROP_PARTITION,
+  RENAME_TABLE,
+  SET_FILE_FORMAT,
+  SET_LOCATION,
+}
+
+// Represents a single item in a partition spec (column name + value)
+struct TPartitionKeyValue {
+  // Partition column name
+  1: required string name,
+
+  // Partition value
+  2: required string value
+}
+
+// Parameters for ALTER TABLE rename commands
+struct TAlterTableRenameParams {
+  // The new table name
+  1: required TTableName new_table_name
+}
+
+// Parameters for ALTER TABLE ADD|REPLACE COLUMNS commands.
+struct TAlterTableAddReplaceColsParams { 
+  // List of columns to add to the table
+  1: required list<TColumnDef> columns
+
+  // If true, replace all existing columns. If false add (append) columns to the table.
+  2: required bool replace_existing_cols
+}
+
+// Parameters for ALTER TABLE ADD PARTITION commands
+struct TAlterTableAddPartitionParams { 
+  // The partition spec (list of keys and values) to add.
+  1: required list<TPartitionKeyValue> partition_spec
+
+  // If true, no error is raised if a partition with the same spec already exists.
+  3: required bool if_not_exists
+
+  // Optional HDFS storage location for the Partition. If not specified the
+  // default storage location is used.
+  2: optional string location
+}
+
+// Parameters for ALTER TABLE DROP COLUMN commands.
+struct TAlterTableDropColParams { 
+  // Column name to drop.
+  1: required string col_name
+}
+
+// Parameters for ALTER TABLE DROP PARTITION commands
+struct TAlterTableDropPartitionParams { 
+  // The partition spec (list of keys and values) to add.
+  1: required list<TPartitionKeyValue> partition_spec
+
+  // If true, no error is raised if no partition with the specified spec exists.
+  2: required bool if_exists
+}
+
+// Parameters for ALTER TABLE CHANGE COLUMN commands
+struct TAlterTableChangeColParams { 
+  // Target column to change.
+  1: required string col_name
+
+  // New column definition for the target column.
+  2: required TColumnDef new_col_def
+}
+
+// Parameters for ALTER TABLE SET [PARTITION partitionSpec] FILEFORMAT commands.
+struct TAlterTableSetFileFormatParams { 
+  // New file format
+  1: required TFileFormat file_format
+
+  // An optional partition spec, set if modifying the fileformat of a partition.
+  2: optional list<TPartitionKeyValue> partition_spec
+}
+
+// Parameters for ALTER TABLE SET [PARTITION partitionSpec] location commands.
+struct TAlterTableSetLocationParams { 
+  // New HDFS storage location of the table
+  1: required string location
+
+  // An optional partition spec, set if modifying the location of a partition.
+  2: optional list<TPartitionKeyValue> partition_spec
+}
+
+// Parameters for all ALTER TABLE commands.
+struct TAlterTableParams {
+  1: required TAlterTableType alter_type
+
+  // Fully qualified name of the target table being altered
+  2: required TTableName table_name
+
+  // Parameters for ALTER TABLE RENAME
+  3: optional TAlterTableRenameParams rename_params
+
+  // Parameters for ALTER TABLE ADD COLUMNS
+  4: optional TAlterTableAddReplaceColsParams add_replace_cols_params
+
+  // Parameters for ALTER TABLE ADD PARTITION
+  5: optional TAlterTableAddPartitionParams add_partition_params
+
+  // Parameters for ALTER TABLE CHANGE COLUMN
+  6: optional TAlterTableChangeColParams change_col_params
+
+  // Parameters for ALTER TABLE DROP COLUMN
+  7: optional TAlterTableDropColParams drop_col_params
+
+  // Parameters for ALTER TABLE DROP PARTITION
+  8: optional TAlterTableDropPartitionParams drop_partition_params
+
+  // Parameters for ALTER TABLE SET FILEFORMAT
+  9: optional TAlterTableSetFileFormatParams set_file_format_params
+
+  // Parameters for ALTER TABLE SET LOCATION
+  10: optional TAlterTableSetLocationParams set_location_params
+}
+
+// Parameters of CREATE TABLE LIKE commands
+struct TCreateTableLikeParams {
+  // Fully qualified name of the table to create
+  1: required TTableName table_name
+
+  // Fully qualified name of the source table
+  2: required TTableName src_table_name
+
+  // True if the table is an "EXTERNAL" table. Dropping an external table will NOT remove
+  // table data from the file system. If EXTERNAL is not specified, all table data will be
+  // removed when the table is dropped.
+  3: required bool is_external
+
+  // Do not throw an error if a table of the same name already exists.
+  4: required bool if_not_exists
+
+  // Owner of the table
+  5: required string owner
+
+  // Optional file format for this table
+  6: optional TFileFormat file_format
+
+  // Optional comment for the table
+  7: optional string comment
+
+  // Optional storage location for the table
+  8: optional string location
+}
+
+// Parameters of CREATE TABLE commands
+struct TCreateTableParams {
+  // Fully qualified name of the table to create
+  1: required TTableName table_name
+
+  // List of columns to create
+  2: required list<TColumnDef> columns
+
+  // List of partition columns
+  3: optional list<TColumnDef> partition_columns
+
+  // The file format for this table
+  4: required TFileFormat file_format
+
+  // True if the table is an "EXTERNAL" table. Dropping an external table will NOT remove
+  // table data from the file system. If EXTERNAL is not specified, all table data will be
+  // removed when the table is dropped.
+  5: required bool is_external
+
+  // Do not throw an error if a table of the same name already exists.
+  6: required bool if_not_exists
+
+  // The owner of the table
+  7: required string owner
+
+  // Specifies how rows and columns are interpreted when reading data from the table
+  8: optional TTableRowFormat row_format
+
+  // Optional comment for the table
+  9: optional string comment
+
+  // Optional storage location for the table
+  10: optional string location
+}
+
+// Parameters of DROP DATABASE commands
+struct TDropDbParams {
+  // Name of the database to drop
+  1: required string db
+
+  // If true, no error is raised if the target db does not exist
+  2: required bool if_exists
+}
+
+// Parameters of DROP TABLE commands
+struct TDropTableParams {
+  // Fully qualified name of the table to drop
+  1: required TTableName table_name
+
+  // If true, no error is raised if the target table does not exist
+  2: required bool if_exists
 }
 
 // Per-client session state
 struct TSessionState {
   // The default database, changed by USE <database> queries.
   1: required string database
+
+  // The user who this session belongs to.
+  2: required string user
 }
 
 struct TClientRequest {
@@ -85,6 +347,27 @@ struct TClientRequest {
 
   // session state
   3: required TSessionState sessionState;
+}
+
+// Parameters for SHOW DATABASES commands
+struct TShowDbsParams {
+  // Optional pattern to match database names. If not set, all databases are returned.
+  1: optional string show_pattern
+}
+
+// Parameters for SHOW TABLES commands
+struct TShowTablesParams {
+  // Database to use for SHOW TABLE
+  1: optional string db
+
+  // Optional pattern to match tables names. If not set, all tables from the given
+  // database are returned.
+  2: optional string show_pattern
+}
+
+// Parameters for the USE db command
+struct TUseDbParams {
+  1: required string db
 }
 
 struct TResultSetMetadata {
@@ -147,26 +430,60 @@ struct TQueryExecRequest {
   6: optional TFinalizeParams finalize_params
 
   7: required ImpalaInternalService.TQueryGlobals query_globals
+
+  // The same as the output of 'explain <query>'
+  8: optional string query_plan
+
+  // The statement type governs when the coordinator can judge a query to be finished.
+  // DML queries are complete after Wait(), SELECTs may not be.
+  9: required Types.TStmtType stmt_type
 }
 
 enum TDdlType {
   SHOW_TABLES,
   SHOW_DBS,
   USE,
-  DESCRIBE
+  DESCRIBE,
+  ALTER_TABLE,
+  CREATE_DATABASE,
+  CREATE_TABLE,
+  CREATE_TABLE_LIKE,
+  DROP_DATABASE,
+  DROP_TABLE,
 }
 
 struct TDdlExecRequest {
   1: required TDdlType ddl_type
 
-  // Used for USE and DESCRIBE
-  2: optional string database;
+  // Parameters for USE commands
+  2: optional TUseDbParams use_db_params;
 
-  // Table name (not fully-qualified) for DESCRIBE
-  3: optional string describe_table;
+  // Parameters for DESCRIBE table commands
+  3: optional TDescribeTableParams describe_table_params
 
-  // Patterns to match table names against for SHOW
-  4: optional string show_pattern;
+  // Parameters for SHOW DATABASES
+  4: optional TShowDbsParams show_dbs_params
+
+  // Parameters for SHOW TABLES
+  5: optional TShowTablesParams show_tables_params
+
+  // Parameters for ALTER TABLE
+  6: optional TAlterTableParams alter_table_params
+
+  // Parameters for CREATE DATABASE
+  7: optional TCreateDbParams create_db_params
+
+  // Parameters for CREATE TABLE
+  8: optional TCreateTableParams create_table_params
+
+  // Parameters for CREATE TABLE LIKE
+  9: optional TCreateTableLikeParams create_table_like_params
+
+  // Paramaters for DROP DATABAE
+  10: optional TDropDbParams drop_db_params
+
+  // Parameters for DROP TABLE
+  11: optional TDropTableParams drop_table_params
 }
 
 // HiveServer2 Metadata operations (JniFrontend.hiveServer2MetadataOperation)

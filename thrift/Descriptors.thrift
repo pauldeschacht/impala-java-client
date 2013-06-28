@@ -40,19 +40,21 @@ enum THdfsFileFormat {
   LZO_TEXT,
   RC_FILE,
   SEQUENCE_FILE,
-  TREVNI
+  AVRO,
+  PARQUET
 }
 
 enum THdfsCompression {
   NONE,
   DEFAULT,
   GZIP,
+  DEFLATE,
   BZIP2,
   SNAPPY,
   SNAPPY_BLOCKED // Used by sequence and rc files but not stored in the metadata.
 }
 
-// Mapping from names defined by Trevni to the enum.
+// Mapping from names defined by Avro to the enum.
 // We permit gzip and bzip2 in addition.
 const map<string, THdfsCompression> COMPRESSION_MAP = {
   "": THdfsCompression.NONE,
@@ -78,9 +80,13 @@ struct THdfsPartition {
 struct THdfsTable {
   1: required string hdfsBaseDir
 
+  // Names of the columns, including clustering columns.  As in other
+  // places, the clustering columns come before the non-clustering
+  // columns.  This includes non-materialized columns. 
+  2: required list<string> colNames;
+
   // Partition keys are the same as clustering columns in
   // TTableDescriptor, so there should be an equal number of each.
-  2: required list<string> partitionKeyNames
   3: required string nullPartitionKeyValue
 
   // map from partition id to partition metadata

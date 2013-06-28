@@ -27,8 +27,8 @@ include "cli_service.thrift"
 // - ImpalaService.DEFAULT_QUERY_OPTIONS
 // - ImpalaInternalService.thrift: TQueryOptions
 // - ImpaladClientExecutor.getBeeswaxQueryConfigurations()
-// - ImpalaServer::QueryToTClientRequest()
-// - ImpalaServer::InitializeConfigVariables()
+// - ImpalaServer::SetQueryOptions()
+// - ImpalaServer::TQueryOptionsToMap()
 enum TImpalaQueryOptions {
   // if true, abort execution on the first error
   ABORT_ON_ERROR,
@@ -42,6 +42,13 @@ enum TImpalaQueryOptions {
   // batch size to be used by backend; Unspecified or a size of 0 indicates backend
   // default
   BATCH_SIZE,
+
+  // a per-machine approximate limit on the memory consumption of this query;
+  // unspecified or a limit of 0 means no limit;
+  // otherwise specified either as:
+  // a) an int (= number of bytes);
+  // b) a float followed by "M" (MB) or "G" (GB)
+  MEM_LIMIT,
    
   // specifies the degree of parallelism with which to execute the query;
   // 1: single-node execution
@@ -70,6 +77,20 @@ enum TImpalaQueryOptions {
   // with an ORDER BY but without a LIMIT clause (ie, if the SELECT statement also has
   // a LIMIT clause, this default is ignored)
   DEFAULT_ORDER_BY_LIMIT,
+
+  // DEBUG ONLY:
+  // If set to
+  //   "[<backend number>:]<node id>:<TExecNodePhase>:<TDebugAction>",
+  // the exec node with the given id will perform the specified action in the given
+  // phase. If the optional backend number (starting from 0) is specified, only that
+  // backend instance will perform the debug action, otherwise all backends will behave
+  // in that way.
+  // If the string doesn't have the required format or if any of its components is
+  // invalid, the option is ignored. 
+  DEBUG_ACTION,
+  
+  // If true, raise an error when the DEFAULT_ORDER_BY_LIMIT has been reached.
+  ABORT_ON_DEFAULT_LIMIT_EXCEEDED,
 }
 
 // Default values for each query option in ImpalaService.TImpalaQueryOptions
@@ -83,6 +104,9 @@ const map<TImpalaQueryOptions, string> DEFAULT_QUERY_OPTIONS = {
   TImpalaQueryOptions.MAX_IO_BUFFERS : "0"
   TImpalaQueryOptions.NUM_SCANNER_THREADS : "0"
   TImpalaQueryOptions.ALLOW_UNSUPPORTED_FORMATS : "false"
+  TImpalaQueryOptions.DEFAULT_ORDER_BY_LIMIT : "-1"
+  TImpalaQueryOptions.DEBUG_ACTION : ""
+  TImpalaQueryOptions.MEM_LIMIT : "0"
 }
 
 // The summary of an insert.
@@ -91,6 +115,31 @@ struct TInsertResult {
   // The keys represent partitions to create, coded as k1=v1/k2=v2/k3=v3..., with the 
   // root in an unpartitioned table being the empty string.
   1: required map<string, i64> rows_appended
+}
+
+// Response from a call to PingImpalaService
+struct TPingImpalaServiceResp {
+  // The Impala service's version string.
+  1: string version
+}
+
+// Parameters for a ResetTable request which will invalidate a table's metadata.
+struct TResetTableReq {
+  // Name of the table's parent database.
+  1: required string db_name
+
+  // Name of the table.
+  2: required string table_name
+}
+
+// Response from call to ResetCatalog
+struct TResetCatalogResp {
+  1: required Status.TStatus status
+}
+
+// Response from call to ResetTable
+struct TResetTableResp {
+  1: required Status.TStatus status
 }
 
 // For all rpc that return a TStatus as part of their result type,
@@ -108,18 +157,28 @@ service ImpalaService extends beeswax.BeeswaxService {
         
   // Invalidates all catalog metadata, forcing a reload
   Status.TStatus ResetCatalog();
+
+  // Invalidates a specific table's catalog metadata, forcing a reload on the next access
+  Status.TStatus ResetTable(1:TResetTableReq request)
+
+  // Returns the runtime profile string for the given query handle.
+  string GetRuntimeProfile(1:beeswax.QueryHandle query_id)
+      throws(1:beeswax.BeeswaxException error);
   
   // Closes the query handle and return the result summary of the insert.
   TInsertResult CloseInsert(1:beeswax.QueryHandle handle)
       throws(1:beeswax.QueryNotFoundException error, 2:beeswax.BeeswaxException error2);
-      
-  // Client calls this RPC to verify that the server is an ImpalaService.
-  void PingImpalaService();
+
+  // Client calls this RPC to verify that the server is an ImpalaService. Returns the
+  // server version.
+  TPingImpalaServiceResp PingImpalaService();
 }
 
 // Impala HiveServer2 service
 service ImpalaHiveServer2Service extends cli_service.TCLIService {
   // Invalidates all catalog metadata, forcing a reload
-  Status.TStatus ResetCatalog(); 
-}
+  TResetCatalogResp ResetCatalog();
 
+  // Invalidates a specific table's catalog metadata, forcing a reload on the next access
+  TResetTableResp ResetTable(1:TResetTableReq request);
+}

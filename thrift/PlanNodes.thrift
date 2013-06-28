@@ -31,7 +31,23 @@ enum TPlanNodeType {
   AGGREGATION_NODE,
   SORT_NODE,
   EXCHANGE_NODE,
-  MERGE_NODE
+  MERGE_NODE,
+  SELECT_NODE
+}
+
+// phases of an execution node
+enum TExecNodePhase {
+  PREPARE,
+  OPEN,
+  GETNEXT,
+  CLOSE,
+  INVALID
+}
+
+// what to do when hitting a debug point (TImpalaQueryOptions.DEBUG_ACTION)
+enum TDebugAction {
+  WAIT,
+  FAIL
 }
 
 // The information contained in subclasses of ScanNode captured in two separate
@@ -55,6 +71,9 @@ struct THdfsFileSplit {
   // ID of partition in parent THdfsScanNode. Meaningful only
   // in the context of a single THdfsScanNode, may not be unique elsewhere.
   4: required i64 partition_id
+  
+  // total size of the hdfs file
+  5: required i64 file_length
 }
 
 // key range for single THBaseScanNode
@@ -140,14 +159,24 @@ struct TSortNode {
   2: required list<bool> is_asc_order
   // Indicates whether the backend service should use topn vs. sorting
   3: required bool use_top_n;
+  // Indicates whether the imposed limit comes DEFAULT_ORDER_BY_LIMIT.
+  4: required bool is_default_limit
 }
 
 struct TMergeNode {
+  // A MergeNode could be the left input of a join and needs to know which tuple to write.
+  1: required Types.TTupleId tuple_id
   // List or expr lists materialized by this node.
   // There is one list of exprs per query stmt feeding into this merge node.
-  1: required list<list<Exprs.TExpr>> result_expr_lists
+  2: required list<list<Exprs.TExpr>> result_expr_lists
   // Separate list of expr lists coming from a constant select stmts.
-  2: required list<list<Exprs.TExpr>> const_expr_lists
+  3: required list<list<Exprs.TExpr>> const_expr_lists
+}
+
+struct TExchangeNode {
+  // The ExchangeNode's input rows form a prefix of the output rows it produces;
+  // this describes the composition of that prefix
+  1: required list<Types.TTupleId> input_row_tuples
 }
 
 // This is essentially a union of all messages corresponding to subclasses
@@ -174,6 +203,7 @@ struct TPlanNode {
   12: optional TAggregationNode agg_node
   13: optional TSortNode sort_node
   14: optional TMergeNode merge_node
+  15: optional TExchangeNode exchange_node
 }
 
 // A flattened representation of a tree of PlanNodes, obtained by depth-first

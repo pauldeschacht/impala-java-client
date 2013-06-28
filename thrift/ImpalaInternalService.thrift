@@ -39,29 +39,22 @@ const i32 INVALID_PLAN_NODE_ID = -1
 // Constant default partition ID, must be < 0 to avoid collisions
 const i64 DEFAULT_PARTITION_ID = -1;
 
-// Query options that correspond to ImpalaService.ImpalaQueryOptions
-// TODO: make all of these optional, otherwise it will be impossible to
-// retire options and do rolling upgrades between releases
+// Query options that correspond to ImpalaService.ImpalaQueryOptions,
+// with their respective defaults
 struct TQueryOptions {
-  1: required bool abort_on_error = 0
-  2: required i32 max_errors = 0
-  3: required bool disable_codegen = 0
-  4: required i32 batch_size = 0
-  
-  // return_as_ascii is not listed in ImpalaService.ImpalaQueryOptions because Beeswax
-  // should only return ascii. This option is only for internal testing.
-  // if true, return query results in ASCII format (TColumnValue.stringVal),
-  // otherwise return results in their native format (each TColumnValue
-  // uses the field corresponding to the column's native type). 
-  // TODO: this is not used in the backend at all. Remove this option.
-  5: required bool return_as_ascii = 1
-  
-  6: required i32 num_nodes = NUM_NODES_ALL
-  7: required i64 max_scan_range_length = 0
-  8: required i32 num_scanner_threads = 0
-  9: required i32 max_io_buffers = 0
-  10: required bool allow_unsupported_formats = 0
-  11: optional i64 default_order_by_limit = -1
+  1: optional bool abort_on_error = 0
+  2: optional i32 max_errors = 0
+  3: optional bool disable_codegen = 0
+  4: optional i32 batch_size = 0
+  5: optional i32 num_nodes = NUM_NODES_ALL
+  6: optional i64 max_scan_range_length = 0
+  7: optional i32 num_scanner_threads = 0
+  8: optional i32 max_io_buffers = 0
+  9: optional bool allow_unsupported_formats = 0
+  10: optional i64 default_order_by_limit = -1
+  11: optional string debug_action = ""
+  12: optional i64 mem_limit = 0
+  13: optional bool abort_on_default_limit_exceeded = 0
 }
 
 // A scan range plus the parameters needed to execute that scan.
@@ -76,7 +69,7 @@ struct TPlanFragmentDestination {
   1: required Types.TUniqueId fragment_instance_id
 
   // ... which is being executed on this server
-  2: required Types.THostPort server
+  2: required Types.TNetworkAddress server
 }
 
 // Parameters for a single execution instance of a particular TPlanFragment
@@ -101,6 +94,11 @@ struct TPlanFragmentExecParams {
   // TPlanFragment.output_sink.output_partition.
   // The number of output partitions is destinations.size().
   5: list<TPlanFragmentDestination> destinations
+
+  // Debug options: perform some action in a particular phase of a particular node
+  6: optional Types.TPlanNodeId debug_node_id
+  7: optional PlanNodes.TExecNodePhase debug_phase
+  8: optional PlanNodes.TDebugAction debug_action
 }
 
 // Global query parameters assigned by the coordinator.
@@ -134,7 +132,7 @@ struct TExecPlanFragmentParams {
   // Initiating coordinator.
   // TODO: determine whether we can get this somehow via the Thrift rpc mechanism.
   // required in V1
-  5: optional Types.THostPort coord
+  5: optional Types.TNetworkAddress coord
 
   // backend number assigned by coord to identify backend
   // required in V1

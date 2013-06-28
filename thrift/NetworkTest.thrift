@@ -12,20 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-namespace cpp impala
-namespace java com.cloudera.impala.thrift
+namespace cpp impalatest
 
-enum TStatusCode {
-  OK,
-  CANCELLED,
-  ANALYSIS_ERROR,
-  NOT_IMPLEMENTED_ERROR,
-  RUNTIME_ERROR,
-  MEM_LIMIT_EXCEEDED,
-  INTERNAL_ERROR
+struct ThriftDataParams {
+  1: required string data
 }
 
-struct TStatus {
-  1: required TStatusCode status_code
-  2: list<string> error_msgs
+struct ThriftDataResult {
+  1: required i64 bytes_received
+}
+
+service NetworkTestService {
+  ThriftDataResult Send(1:ThriftDataParams params);
 }
