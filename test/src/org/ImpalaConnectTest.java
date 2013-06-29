@@ -38,12 +38,28 @@ public class ImpalaConnectTest
             
             QueryHandle handle = client.query(query);
             
-            Results results = client.fetch(handle,false,100);
+
+            boolean done = false;
+            while(done == false) {
+                Results results = client.fetch(handle,false,100);
+                QueryState queryState = client.get_state(handle);
+                /*
+                while(queryState != ImpalaService$Client.FINISHED) {
+                    //sleep(0.5)
+                    queryState = client.get_state(query);
+                }
+                */
             
-            List<String> data = results.data;
+                List<String> data = results.data;
             
-            for(int i=0;i<data.size();i++) {
-                System.out.println(data.get(i));
+                for(int i=0;i<data.size();i++) {
+                    System.out.println(data.get(i));
+                }
+
+                if(results.has_more==false) {
+                    done = true;
+                }
+
             }
         }
         catch(Exception e) 
