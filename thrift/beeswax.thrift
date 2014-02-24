@@ -21,6 +21,7 @@
 namespace java com.cloudera.beeswax.api
 namespace py beeswaxd
 namespace cpp beeswax
+namespace rb impala.protocol.beeswax
 
 include "hive_metastore.thrift"
 
@@ -94,7 +95,7 @@ exception BeeswaxException {
 }
 
 exception QueryNotFoundException {
-} 
+}
 
 /** Represents a Hadoop-style configuration variable. */
 struct ConfigVariable {
@@ -112,7 +113,7 @@ service BeeswaxService {
   /**
    * run a query synchronously and return a handle (QueryHandle).
    */
-  QueryHandle executeAndWait(1:Query query, 2:LogContextId clientCtx) 
+  QueryHandle executeAndWait(1:Query query, 2:LogContextId clientCtx)
                         throws(1:BeeswaxException error),
 
   /**
@@ -126,7 +127,7 @@ service BeeswaxService {
    * Results.ready to determine if the results are in yet. The call requests
    * the batch size of fetch.
    */
-  Results fetch(1:QueryHandle query_id, 2:bool start_over, 3:i32 fetch_size=-1) 
+  Results fetch(1:QueryHandle query_id, 2:bool start_over, 3:i32 fetch_size=-1)
               throws(1:QueryNotFoundException error, 2:BeeswaxException error2),
 
   /**
@@ -164,11 +165,11 @@ service BeeswaxService {
   /*
    * closes the query with given handle
    */
-  void close(1:QueryHandle handle) throws(1:QueryNotFoundException error, 
+  void close(1:QueryHandle handle) throws(1:QueryNotFoundException error,
                             2:BeeswaxException error2)
 
   /*
-   * clean the log context for given id 
+   * clean the log context for given id
    */
   void clean(1:LogContextId log_context)
 }
