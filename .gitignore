@@ -1,0 +1,7 @@
+classes
+deps
+gen-java
+jar
+test/classes
+test/jar
+test/deps
