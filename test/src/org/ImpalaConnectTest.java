@@ -12,7 +12,7 @@ import com.cloudera.beeswax.api.*;
 
 public class ImpalaConnectTest
 {
-    private static String host="nceoricloud02.nce.amadeus.net";
+    private static String host="nceoricloud02";
     private static int port=21050;
     private static String stmt="SELECT * FROM document LIMIT 5";
 
