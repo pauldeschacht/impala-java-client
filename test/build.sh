@@ -11,4 +11,4 @@ javac -cp ../jar/ImpalaService.jar:../deps/libthrift-0.9.1.jar -d classes src/or
 mkdir jar
 jar -cvfm ./jar/ImpalaConnectTest.jar manifest.txt  -C classes .
 # run the example
-java -cp ../deps/libthrift-0.9.1.jar:../deps/slf4j.api-1.6.1.jar:./deps/slf4j-simple-1.6.1.jar:../jar/ImpalaService.jar:./jar/ImpalaConnectTest.jar org.ImpalaConnectTest.ImpalaConnectTest nceoricloud02.nce.amadeus.net 21050 "SHOW TABLES"
+java -cp ../deps/libthrift-0.9.1.jar:../deps/slf4j.api-1.6.1.jar:./deps/slf4j-simple-1.6.1.jar:../jar/ImpalaService.jar:./jar/ImpalaConnectTest.jar org.ImpalaConnectTest.ImpalaConnectTest <host> 21050 "SHOW TABLES"
