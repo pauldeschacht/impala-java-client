@@ -9,8 +9,8 @@ function get_deps() {
     wget https://repository.cloudera.com/content/groups/public/org/apache/hive/hive-metastore/0.10.0-cdh4.3.0/hive-metastore-0.10.0-cdh4.3.0.jar 
     wget http://www.java2s.com/Code/JarDownload/slf4j/slf4j.api-1.6.1.jar.zip
     unzip slf4j.api-1.6.1.jar.zip
-    wget http://apache.crihan.fr/dist//commons/lang/binaries/commons-lang3-3.1-bin.tar.gz
-    tar xzf commons-lang3-3.1-bin.tar.gz
+    wget http://apache.crihan.fr/dist//commons/lang/binaries/commons-lang3-3.3.2-bin.tar.gz
+    tar xzf commons-lang3-3.3.2-bin.tar.gz
     cd ..
 }
 
