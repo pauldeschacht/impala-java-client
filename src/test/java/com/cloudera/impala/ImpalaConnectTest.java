@@ -1,14 +1,31 @@
-package org.ImpalaConnectTest;
+package com.cloudera.impala;
 
 import java.util.List;
-import java.util.UUID;
 
-import org.apache.thrift.transport.*;
-import org.apache.thrift.protocol.*;
-import org.apache.hive.service.cli.thrift.*;
+import org.apache.hive.service.cli.thrift.TCloseOperationReq;
+import org.apache.hive.service.cli.thrift.TCloseSessionReq;
+import org.apache.hive.service.cli.thrift.TExecuteStatementReq;
+import org.apache.hive.service.cli.thrift.TExecuteStatementResp;
+import org.apache.hive.service.cli.thrift.TFetchResultsReq;
+import org.apache.hive.service.cli.thrift.TFetchResultsResp;
+import org.apache.hive.service.cli.thrift.TOpenSessionReq;
+import org.apache.hive.service.cli.thrift.TOpenSessionResp;
+import org.apache.hive.service.cli.thrift.TOperationHandle;
+import org.apache.hive.service.cli.thrift.TProtocolVersion;
+import org.apache.hive.service.cli.thrift.TRow;
+import org.apache.hive.service.cli.thrift.TRowSet;
+import org.apache.hive.service.cli.thrift.TSessionHandle;
+import org.apache.thrift.protocol.TBinaryProtocol;
+import org.apache.thrift.protocol.TProtocol;
+import org.apache.thrift.transport.TSocket;
+import org.junit.Test;
 
-import com.cloudera.impala.thrift.*;
-import com.cloudera.beeswax.api.*;
+import com.cloudera.beeswax.api.Query;
+import com.cloudera.beeswax.api.QueryHandle;
+import com.cloudera.beeswax.api.QueryState;
+import com.cloudera.beeswax.api.Results;
+import com.cloudera.impala.thrift.ImpalaHiveServer2Service;
+import com.cloudera.impala.thrift.ImpalaService;
 
 public class ImpalaConnectTest
 {
@@ -35,6 +52,11 @@ public class ImpalaConnectTest
             e.printStackTrace();
         }
     }
+    
+    @Test
+    public void mainSuccess() {
+    	ImpalaConnectTest.testConnectionHiveServer2(host, port, stmt);
+    }
 
     protected static void testConnectionBeeswax(String host, int port, String statement){
         try {
@@ -43,7 +65,7 @@ public class ImpalaConnectTest
             transport.open();
             TProtocol protocol = new TBinaryProtocol(transport);
             //connect to client
-            ImpalaService$Client client = new ImpalaService.Client(protocol);
+            ImpalaService.Client client = new ImpalaService.Client(protocol);
             client.PingImpalaService();
             
             Query query = new Query();
